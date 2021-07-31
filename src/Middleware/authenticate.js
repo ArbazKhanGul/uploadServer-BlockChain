@@ -2,6 +2,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/UserSchema");
 
 const Authenticate = async (req, res, next) => {
+
+
   try {
     const token = req.cookies.jwttoken;
     const verifyToken = jwt.verify(token, process.env.SECRET_KEY);
@@ -11,6 +13,7 @@ const Authenticate = async (req, res, next) => {
       throw new Error("User Not Found");
     }
     req.token = token;
+  
     req.RUser = rootUSer;
     next();
   } catch (err) {

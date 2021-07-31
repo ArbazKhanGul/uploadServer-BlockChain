@@ -8,6 +8,7 @@ router.get("/", (req, res) => {
   res.send("Hello from home page");
 });
 
+
 // Register
 
 router.post("/registeration", async (req, res) => {
@@ -44,6 +45,7 @@ router.post("/registeration", async (req, res) => {
 // Login
 
 router.post("/login", async (req, res) => {
+
   const { email, password } = req.body;
   try {
     const userLogin = await User.findOne({ email: email });
@@ -59,6 +61,7 @@ router.post("/login", async (req, res) => {
         const token = await userLogin.generateAuthToken();
         res.cookie("jwttoken", token, {
           httpOnly: true,
+          // domain: process.env.CLIENT_DOMAIN
         });
 
         return res.status(200).json({
@@ -76,11 +79,60 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// about
+
 router.get("/about", authenticate, (req, res) => {
   res.send({ stat: "Success" });
 });
 
-// Token
+// AdminAccepted
+
+router.get("/adminaccept",authenticate,(req,res)=>{
+
+if(req.RUser.role==="admin")
+{
+  res.send({ stat: "admin", error: "it is admin" });
+}
+else{
+  res.status(401).send({ stat: "notadmin", error: "You are not admin" });
+}
+})
+
+// AdminPending
+
+
+router.get("/adminpending",authenticate,(req,res)=>{
+
+  if(req.RUser.role==="admin")
+  {
+    res.send({stat:"Success",Role:"admin"});
+  }
+  else{
+    res.send({stat:"Wrong",Role:"user"})
+  }
+  })
+
+// Registered Users
+
+router.get("/registerdusers",authenticate,async (req,res)=>{
+
+  if(req.RUser.role==="admin")
+  {
+
+let registeredUsers = await User.find({role:"user"}).select({password:0,_id:0,role:0});
+console.log(registeredUsers);
+
+    res.send({stat:"Success",Role:"admin",allUsersDetail:registeredUsers});
+
+
+
+
+  }
+  else{
+    res.send({stat:"Wrong",Role:"user"})
+  }
+  })
+  // Token
 
 router.post("/token", (req, res) => {
   let name;
@@ -111,5 +163,6 @@ router.post("/token", (req, res) => {
 
   main();
 });
+
 
 module.exports = router;
