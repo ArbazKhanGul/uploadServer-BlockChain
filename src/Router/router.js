@@ -216,5 +216,36 @@ catch(err){
 
 
 
+  // AcceptForm
+
+  router.post("/action",authenticate, async (req,res)=>{
+     
+  const formid=req.body.formid;
+console.log(req.body);
+const behaviour=req.body.behaviour;
+  if(formid){
+  console.log(formid);
+try{
+const response=await form.findByIdAndUpdate({_id:formid},{$set:{status:behaviour}},{new:true});
+console.log(response)
+
+const responsePending=await form.find({
+  status:"pending"
+})
+
+
+  res.status(200).json({stat :"success",message:`successfully ${behaviour} form`,responsePending:responsePending})
+  }
+  catch(err){
+    console.log(err);
+    res.status(200).json({stat :"empty","message":"not accepted"})    
+  }
+}
+  else
+  {
+    res.status(200).json({stat :"empty","message":"not accepted"})
+  }
+})
+
 
 module.exports = router;
