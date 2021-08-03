@@ -4,6 +4,7 @@ const User = require("../models/UserSchema");
 const bcrypt = require("bcryptjs");
 const authenticate = require("../Middleware/authenticate");
 const Web3 = require("web3");
+const form=require("../models/FormSchema");
 router.get("/", (req, res) => {
   res.send("Hello from home page");
 });
@@ -98,20 +99,6 @@ else{
 }
 })
 
-// AdminPending
-
-
-router.get("/adminpending",authenticate,(req,res)=>{
-
-  if(req.RUser.role==="admin")
-  {
-    res.send({stat:"Success",Role:"admin"});
-  }
-  else{
-    res.send({stat:"Wrong",Role:"user"})
-  }
-  })
-
 // Registered Users
 
 router.get("/registerdusers",authenticate,async (req,res)=>{
@@ -120,16 +107,13 @@ router.get("/registerdusers",authenticate,async (req,res)=>{
   {
 
 let registeredUsers = await User.find({role:"user"}).select({password:0,_id:0,role:0});
-console.log(registeredUsers);
+
 
     res.send({stat:"Success",Role:"admin",allUsersDetail:registeredUsers});
 
-
-
-
   }
   else{
-    res.send({stat:"Wrong",Role:"user"})
+    res.send({stat:"notadmin",Role:"user"})
   }
   })
   // Token
@@ -139,7 +123,7 @@ router.post("/token", (req, res) => {
   let temp;
 
   tokenVal = req.body.tokenInputVal;
-  console.log(tokenVal);
+
 
   async function main() {
     // Set up web3 object, connected to the local development network
@@ -151,8 +135,7 @@ router.post("/token", (req, res) => {
       const token = new web3.eth.Contract(abi, address);
       name = await token.methods.name().call();
       const supply = await token.methods.totalSupply().call();
-      console.log(name);
-      console.log(supply);
+      
       temp = web3.utils.fromWei(supply, "ether");
       console.log(temp);
       res.send({ name: name, tokens: temp });
@@ -163,6 +146,75 @@ router.post("/token", (req, res) => {
 
   main();
 });
+
+
+// Token Froms Save
+
+router.post("/tokenform",authenticate,async (req,res)=>{
+
+
+  const {  contractadress,requestername,requesteremailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
+    discord,
+    twitter,
+    medium,
+    coinmarketcap,
+    coingecko } = req.body;
+  let id = req.RUser._id;
+  
+
+    try {
+    const formobject = new form({ contractadress,requestername,requestemailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
+      discord,
+      twitter,
+      medium,
+      coinmarketcap,
+      coingecko,id});
+ 
+    await formobject.save();
+    return res.status(200).json({
+      stat: "success",
+      message: "user form registered successfully",
+    
+  })
+
+}
+  catch (error) {
+    return res.status(500).json({
+      stat: "wrong",
+      error: "Some error occurred",
+     });
+  }
+
+})
+
+
+
+// AdminPending
+
+
+router.get("/adminpending",authenticate, async (req,res)=>{
+console.log("pending")
+  if(req.RUser.role==="admin")
+  {
+try{
+const response=await form.find({
+  status:"pending"
+})
+
+res.status(200).send({stat:"Success",Role:"admin",response:response});
+}
+catch(err){
+  res.send({stat:"servererror",Role:"admin"})
+}
+    
+   
+  }
+  else{
+    res.status(401).send({stat:"notadmin",Role:"user"})
+  }
+  })
+
+
 
 
 module.exports = router;
