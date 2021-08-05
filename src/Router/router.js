@@ -88,11 +88,13 @@ router.get("/about", authenticate, (req, res) => {
 
 // AdminAccepted
 
-router.get("/adminaccept",authenticate,(req,res)=>{
+router.get("/adminaccept",authenticate,async (req,res)=>{
 
 if(req.RUser.role==="admin")
 {
-  res.send({ stat: "admin", error: "it is admin" });
+  let formaccepted = await form.find({status:"accept"});
+    
+  res.send({ stat: "admin", message: "it is admin" ,formaccepted:formaccepted});
 }
 else{
   res.status(401).send({ stat: "notadmin", error: "You are not admin" });
@@ -137,7 +139,7 @@ router.post("/token", (req, res) => {
       const supply = await token.methods.totalSupply().call();
       
       temp = web3.utils.fromWei(supply, "ether");
-      console.log(temp);
+      
       res.send({ name: name, tokens: temp });
     } catch (err) {
       res.status(400).send({ stat: "wrong", tokens: "token not exist" });
@@ -163,7 +165,7 @@ router.post("/tokenform",authenticate,async (req,res)=>{
   
 
     try {
-    const formobject = new form({ contractadress,requestername,requestemailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
+    const formobject = new form({ contractadress,requestername,requesteremailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
       discord,
       twitter,
       medium,
@@ -193,7 +195,7 @@ router.post("/tokenform",authenticate,async (req,res)=>{
 
 
 router.get("/adminpending",authenticate, async (req,res)=>{
-console.log("pending")
+
   if(req.RUser.role==="admin")
   {
 try{
@@ -221,13 +223,13 @@ catch(err){
   router.post("/action",authenticate, async (req,res)=>{
      
   const formid=req.body.formid;
-console.log(req.body);
+
 const behaviour=req.body.behaviour;
   if(formid){
   console.log(formid);
 try{
 const response=await form.findByIdAndUpdate({_id:formid},{$set:{status:behaviour}},{new:true});
-console.log(response)
+
 
 const responsePending=await form.find({
   status:"pending"
