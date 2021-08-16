@@ -59,6 +59,9 @@ id:{
 status:{
     type:String,
     default:"pending"
+},
+hash:{
+    type:String
 }
 })
 

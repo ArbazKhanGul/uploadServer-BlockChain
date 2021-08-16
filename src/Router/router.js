@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const authenticate = require("../Middleware/authenticate");
 const Web3 = require("web3");
 const form=require("../models/FormSchema");
+const Address=require("../models/AddressSchema");
+
 router.get("/", (req, res) => {
   res.send("Hello from home page");
 });
@@ -101,6 +103,80 @@ else{
 }
 })
 
+
+//ReceiverAddress
+router.get("/receiveraddress",authenticate,async (req,res)=>{
+
+  if(req.RUser.role==="admin")
+  {
+
+    res.send({ stat: "admin", message: "it is admin"});
+  }
+  else{
+    res.status(401).send({ stat: "notadmin", error: "You are not admin" });
+  }
+  })
+  
+
+  // Verify Address
+  router.post("/verifyaddress",authenticate,async (req,res)=>{
+ 
+  
+    if(req.RUser.role==="admin")
+    {
+      try{
+const address=req.body.address;
+let result= await Web3.utils.isAddress(address);
+
+if(result){
+  const receive=await Address.updateOne({checkId:"arbazkhan"},{$set : {receiveraddress:address}},{new:true});
+  console.log(receive);
+    res.send({ stat: "admin", message: "it is admin",formstatus:true});
+  
+  }
+  else{
+    res.send({ stat: "admin", message: "it is admin",formstatus:false});
+  }
+      
+        }catch(err){
+          res.send({ stat: "admin", message: "it is admin",formstatus:"error"});
+        }    }
+    else{
+      res.status(401).send({ stat: "notadmin", error: "You are not admin" });
+    }
+    })
+    
+// GetReceiverAddress
+
+router.get("/getreceiveraddress",authenticate,async (req,res)=>{
+
+  try{
+    const receive=await Address.findOne({checkId:"arbazkhan"});
+    console.log(receive.receiveraddress);
+    res.send({ stat: "admin", message: "it is admin",receive:receive.receiveraddress});
+  }
+  catch(err){
+    res.send({ stat: "admin", message: "it is admin",receive:"error"});
+  }
+  })
+  
+
+    //Client
+
+router.get("/client",authenticate,async (req,res)=>{
+let temp = req.RUser._id;
+console.log(temp)
+    let formaccepted = await form.find({id:temp});
+      
+    res.send({ stat: "success", message: "successfully send" ,formaccepted:formaccepted});
+  
+  
+  })
+
+
+
+
+
 // Registered Users
 
 router.get("/registerdusers",authenticate,async (req,res)=>{
@@ -118,6 +194,7 @@ let registeredUsers = await User.find({role:"user"}).select({password:0,_id:0,ro
     res.send({stat:"notadmin",Role:"user"})
   }
   })
+
   // Token
 
 router.post("/token", (req, res) => {
@@ -126,10 +203,10 @@ router.post("/token", (req, res) => {
 
   tokenVal = req.body.tokenInputVal;
 
-
+  // data-seed-prebsc-1-s1.binance.org:8545
   async function main() {
     // Set up web3 object, connected to the local development network
-    const web3 = new Web3("https://bsc-dataseed.binance.org/");
+    const web3 = new Web3("https://data-seed-prebsc-1-s3.binance.org:8545/");
 
     const address = tokenVal;
     const abi = require("./supply.json");
@@ -160,17 +237,17 @@ router.post("/tokenform",authenticate,async (req,res)=>{
     twitter,
     medium,
     coinmarketcap,
-    coingecko } = req.body;
+    coingecko,hash } = req.body;
   let id = req.RUser._id;
   
-
+console.log(hash);
     try {
     const formobject = new form({ contractadress,requestername,requesteremailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
       discord,
       twitter,
       medium,
       coinmarketcap,
-      coingecko,id});
+      coingecko,id,hash});
  
     await formobject.save();
     return res.status(200).json({
@@ -248,6 +325,36 @@ const responsePending=await form.find({
     res.status(200).json({stat :"empty","message":"not accepted"})
   }
 })
+
+// formdetail
+router.get("/formdetail",async (req,res)=>{
+
+  
+  try{
+    let formaccepted = await form.find({status:"accept"});
+      
+    res.send({ stat: "success", message: "data send" ,formaccepted:formaccepted});
+  }
+  catch{
+    res.status(401).send({ stat: "fail", error: "error come" });
+  }
+  })
+  
+  //detailType
+  router.post("/detailtype",async (req,res)=>{
+
+  const id=req.body.detailtype;
+  console.log(id)
+    try{
+      let formaccepted = await form.find({_id:id});
+        
+      res.send({ stat: "success", message: "data send" ,formaccepted:formaccepted});
+    }
+    catch{
+      res.status(401).send({ stat: "fail", error: "error come" });
+    }
+    })
+    
 
 
 module.exports = router;
