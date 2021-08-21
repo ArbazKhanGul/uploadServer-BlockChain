@@ -62,6 +62,12 @@ status:{
 },
 hash:{
     type:String
+},
+tokenprice:{
+    type: Number
+},
+totaltokenssend:{
+    type:Number
 }
 })
 

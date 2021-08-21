@@ -6,8 +6,10 @@ receiveraddress:{
     type: String,
     default:"0x3905ed8B71F4702F7adB5aeFd86c7Ae9fB750EC7"
     
-}
-,
+},
+privatekey:{
+type:String
+},
 checkId:{
 type:String,
 default:"arbazkhan"

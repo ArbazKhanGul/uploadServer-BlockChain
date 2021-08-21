@@ -126,10 +126,12 @@ router.get("/receiveraddress",authenticate,async (req,res)=>{
     {
       try{
 const address=req.body.address;
+const key=req.body.privatekey;
+console.log(key);
 let result= await Web3.utils.isAddress(address);
 
 if(result){
-  const receive=await Address.updateOne({checkId:"arbazkhan"},{$set : {receiveraddress:address}},{new:true});
+  const receive=await Address.update({checkId:"arbazkhan"},{$set : {receiveraddress:address,privatekey:key}},{new:true});
   console.log(receive);
     res.send({ stat: "admin", message: "it is admin",formstatus:true});
   
@@ -146,14 +148,16 @@ if(result){
     }
     })
     
+
+    
 // GetReceiverAddress
 
-router.get("/getreceiveraddress",authenticate,async (req,res)=>{
+router.get("/getreceiveraddress",async (req,res)=>{
 
   try{
     const receive=await Address.findOne({checkId:"arbazkhan"});
     console.log(receive.receiveraddress);
-    res.send({ stat: "admin", message: "it is admin",receive:receive.receiveraddress});
+    res.send({ stat: "admin", message: "it is admin",receive:receive});
   }
   catch(err){
     res.send({ stat: "admin", message: "it is admin",receive:"error"});
@@ -237,9 +241,10 @@ router.post("/tokenform",authenticate,async (req,res)=>{
     twitter,
     medium,
     coinmarketcap,
-    coingecko,hash } = req.body;
+    coingecko,hash ,totaltokenssend,tokenprice} = req.body;
   let id = req.RUser._id;
   
+  console.log(req.body);
 console.log(hash);
     try {
     const formobject = new form({ contractadress,requestername,requesteremailadress,projectname,officialprojectwebsite,officailprojectemailaddress,iconurl,projectsector,projectdescription,tokensavailable,whitepaper,telegram,
@@ -247,7 +252,7 @@ console.log(hash);
       twitter,
       medium,
       coinmarketcap,
-      coingecko,id,hash});
+      coingecko,id,hash,tokenprice,totaltokenssend});
  
     await formobject.save();
     return res.status(200).json({
@@ -302,12 +307,14 @@ catch(err){
   const formid=req.body.formid;
 
 const behaviour=req.body.behaviour;
+
+
   if(formid){
   console.log(formid);
 try{
 const response=await form.findByIdAndUpdate({_id:formid},{$set:{status:behaviour}},{new:true});
 
-
+console.log(response);
 const responsePending=await form.find({
   status:"pending"
 })
