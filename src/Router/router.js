@@ -218,11 +218,20 @@ router.post("/token", (req, res) => {
       const token = new web3.eth.Contract(abi, address);
       name = await token.methods.name().call();
       const supply = await token.methods.totalSupply().call();
+      const decimal =await token.methods.decimals().call();
+      const symbol =await token.methods.symbol().call();
+    
+
+
+      console.log("Printing decimal value"+decimal)
+      console.log("Printing symbol value"+symbol)
       
+
       temp = web3.utils.fromWei(supply, "ether");
       
-      res.send({ name: name, tokens: temp });
+      res.send({ name: name, tokens: temp ,decimal:decimal,symbol:symbol,chain:"BEP20"});
     } catch (err) {
+      console.log(err)
       res.status(400).send({ stat: "wrong", tokens: "token not exist" });
     }
   }
@@ -241,7 +250,9 @@ router.post("/tokenform",authenticate,async (req,res)=>{
     twitter,
     medium,
     coinmarketcap,
-    coingecko,hash ,totaltokenssend,tokenprice} = req.body;
+    coingecko,hash ,totaltokenssend,tokenprice,tokensymbol,
+    tokenchain,
+    tokendecimal} = req.body;
   let id = req.RUser._id;
   
   console.log(req.body);
@@ -252,7 +263,9 @@ console.log(hash);
       twitter,
       medium,
       coinmarketcap,
-      coingecko,id,hash,tokenprice,totaltokenssend});
+      coingecko,id,hash,tokenprice,totaltokenssend,tokensymbol,
+      tokenchain,
+      tokendecimal});
  
     await formobject.save();
     return res.status(200).json({
@@ -284,9 +297,10 @@ try{
 const response=await form.find({
   status:"pending"
 })
-
+console.log(response)
 res.status(200).send({stat:"Success",Role:"admin",response:response});
 }
+
 catch(err){
   res.send({stat:"servererror",Role:"admin"})
 }

@@ -68,7 +68,17 @@ tokenprice:{
 },
 totaltokenssend:{
     type:Number
+},
+tokensymbol:{
+    type:String
+},
+tokenchain:{
+    type:String
+ },
+tokendecimal:{
+type:String
 }
+
 })
 
 const Form = mongoose.model("TokenForm", FormSchema);
