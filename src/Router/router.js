@@ -5,6 +5,8 @@ const bcrypt = require("bcryptjs");
 const authenticate = require("../Middleware/authenticate");
 const Web3 = require("web3");
 const form=require("../models/FormSchema");
+const axios=require("axios").default;
+const fetch=require("node-fetch");
 const Address=require("../models/AddressSchema");
 
 router.get("/", (req, res) => {
@@ -220,16 +222,28 @@ router.post("/token", (req, res) => {
       const supply = await token.methods.totalSupply().call();
       const decimal =await token.methods.decimals().call();
       const symbol =await token.methods.symbol().call();
-    
+let coinbank;
+      
+const data=await fetch(`https://api.pancakeswap.info/api/v2/tokens/${tokenVal}`);
+const response=await data.json();
 
+if(response.data){
 
-      console.log("Printing decimal value"+decimal)
+coinbank=response.data;
+console.log(coinbank);
+}
+else{
+  coinbank="error";
+  console.log(coinbank)
+}
+
+    console.log("Printing decimal value"+decimal)
       console.log("Printing symbol value"+symbol)
       
 
       temp = web3.utils.fromWei(supply, "ether");
       
-      res.send({ name: name, tokens: temp ,decimal:decimal,symbol:symbol,chain:"BEP20"});
+      res.send({ name: name, tokens: temp ,decimal:decimal,symbol:symbol,chain:"BEP20",coinbank});
     } catch (err) {
       console.log(err)
       res.status(400).send({ stat: "wrong", tokens: "token not exist" });
@@ -252,7 +266,7 @@ router.post("/tokenform",authenticate,async (req,res)=>{
     coinmarketcap,
     coingecko,hash ,totaltokenssend,tokenprice,tokensymbol,
     tokenchain,
-    tokendecimal} = req.body;
+    tokendecimal,q1,q2,q3,q4,q5,q6,q7,q8} = req.body;
   let id = req.RUser._id;
   
   console.log(req.body);
@@ -265,7 +279,7 @@ console.log(hash);
       coinmarketcap,
       coingecko,id,hash,tokenprice,totaltokenssend,tokensymbol,
       tokenchain,
-      tokendecimal});
+      tokendecimal,q1,q2,q3,q4,q5,q6,q7,q8});
  
     await formobject.save();
     return res.status(200).json({
